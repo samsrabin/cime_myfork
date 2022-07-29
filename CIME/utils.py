@@ -2460,16 +2460,17 @@ def run_and_log_case_status(
         )
         raise
     else:
-        custom_success_msg = (
-            custom_success_msg_functor(rv) if custom_success_msg_functor else None
-        )
-        if phase == "case.submit" and is_batch:
-            append_case_status(
-                phase, "starting", msg=custom_success_msg, caseroot=caseroot
+        if rv:
+            custom_success_msg = (
+                custom_success_msg_functor(rv) if custom_success_msg_functor else None
             )
-        append_case_status(
-            phase, CASE_SUCCESS, msg=custom_success_msg, caseroot=caseroot
-        )
+            if phase == "case.submit" and is_batch:
+                append_case_status(
+                    phase, "starting", msg=custom_success_msg, caseroot=caseroot
+                )
+            append_case_status(
+                phase, CASE_SUCCESS, msg=custom_success_msg, caseroot=caseroot
+            )
 
     return rv
 

@@ -44,6 +44,12 @@ def parse_command_line(args, description):
         "This will be the first job of any defined workflow.  "
         "Default is case.run.",
     )
+    
+    parser.add_argument(
+        "--no-submit",
+        action="store_true",
+        help="Do not submit jobs, but do everything else.",
+    )
 
     parser.add_argument(
         "--only-job",
@@ -134,6 +140,7 @@ def parse_command_line(args, description):
         args.batch_args,
         workflow,
         args.chksum,
+        args.no_submit,
     )
 
 
@@ -154,6 +161,7 @@ def _main_func(description, test_args=False):
         batch_args,
         workflow,
         chksum,
+        no_submit,
     ) = parse_command_line(sys.argv, description)
 
     # save these options to a hidden file for use during resubmit
@@ -189,6 +197,7 @@ def _main_func(description, test_args=False):
                 batch_args=batch_args,
                 workflow=workflow,
                 chksum=chksum,
+                no_submit=no_submit,
             )
 
 

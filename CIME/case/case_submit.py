@@ -39,6 +39,7 @@ def _submit(
     batch_args=None,
     workflow=True,
     chksum=False,
+    no_submit=False,
 ):
     if job is None:
         job = case.get_first_job()
@@ -175,6 +176,11 @@ manual edits to these file will be lost!
 
     case.flush()
 
+    # Stop here if not submitting job
+    if no_submit:
+        logger.warning("Not submitting job(s) due to --no-submit flag")
+        return None
+    
     logger.warning("submit_jobs {}".format(job))
     job_ids = case.submit_jobs(
         no_batch=no_batch,
@@ -187,6 +193,7 @@ manual edits to these file will be lost!
         mail_type=mail_type,
         batch_args=batch_args,
         workflow=workflow,
+        no_submit=no_submit,
     )
 
     xml_jobids = []
@@ -216,6 +223,7 @@ def submit(
     batch_args=None,
     workflow=True,
     chksum=False,
+    no_submit=False,
 ):
     if resubmit_immediate and self.get_value("MACH") in ["mira", "cetus"]:
         logger.warning(
@@ -268,6 +276,7 @@ def submit(
             batch_args=batch_args,
             workflow=workflow,
             chksum=chksum,
+            no_submit=no_submit,
         )
         run_and_log_case_status(
             functor,
