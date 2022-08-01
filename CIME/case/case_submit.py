@@ -193,7 +193,6 @@ manual edits to these file will be lost!
         mail_type=mail_type,
         batch_args=batch_args,
         workflow=workflow,
-        no_submit=no_submit,
     )
 
     xml_jobids = []
