@@ -40,6 +40,7 @@ def _submit(
     workflow=True,
     chksum=False,
     no_submit=False,
+    only_submit=False,
 ):
     if job is None:
         job = case.get_first_job()
@@ -88,70 +89,33 @@ def _submit(
                 ),
             )
 
-    # if case.submit is called with the no_batch flag then we assume that this
-    # flag will stay in effect for the duration of the RESUBMITs
-    env_batch = case.get_env("batch")
-    external_workflow = case.get_value("EXTERNAL_WORKFLOW")
-    if env_batch.get_batch_system_type() == "none" or resubmit and external_workflow:
-        no_batch = True
-
-    if no_batch:
-        batch_system = "none"
+    if only_submit:
+        logger.warning("Skipping run directory setup due to --only-submit flag")
     else:
-        batch_system = env_batch.get_batch_system_type()
-    unlock_file(os.path.basename(env_batch.filename), caseroot=caseroot)
-    case.set_value("BATCH_SYSTEM", batch_system)
-
-    env_batch_has_changed = False
-    if not external_workflow:
-        try:
-            case.check_lockedfile(
-                os.path.basename(env_batch.filename), caseroot=caseroot
-            )
-        except:
-            env_batch_has_changed = True
-
-    if batch_system != "none" and env_batch_has_changed and not external_workflow:
-        # May need to regen batch files if user made batch setting changes (e.g. walltime, queue, etc)
-        logger.warning(
-            """
-env_batch.xml appears to have changed, regenerating batch scripts
-manual edits to these file will be lost!
-"""
-        )
-        env_batch.make_all_batch_files(case)
-    case.flush()
-    lock_file(os.path.basename(env_batch.filename), caseroot=caseroot)
-
-    if resubmit:
-        # This is a resubmission, do not reinitialize test values
-        if job == "case.test":
-            case.set_value("IS_FIRST_RUN", False)
-
-        resub = case.get_value("RESUBMIT")
-        logger.info("Submitting job '{}', resubmit={:d}".format(job, resub))
-        case.set_value("RESUBMIT", resub - 1)
-        if case.get_value("RESUBMIT_SETS_CONTINUE_RUN"):
-            case.set_value("CONTINUE_RUN", True)
-
-    else:
-        if job == "case.test":
-            case.set_value("IS_FIRST_RUN", True)
+        # if case.submit is called with the no_batch flag then we assume that this
+        # flag will stay in effect for the duration of the RESUBMITs
+        env_batch = case.get_env("batch")
+        external_workflow = case.get_value("EXTERNAL_WORKFLOW")
+        if env_batch.get_batch_system_type() == "none" or resubmit and external_workflow:
+            no_batch = True
 
         if no_batch:
             batch_system = "none"
         else:
             batch_system = env_batch.get_batch_system_type()
-
+        unlock_file(os.path.basename(env_batch.filename), caseroot=caseroot)
         case.set_value("BATCH_SYSTEM", batch_system)
 
         env_batch_has_changed = False
-        try:
-            case.check_lockedfile(os.path.basename(env_batch.filename))
-        except CIMEError:
-            env_batch_has_changed = True
+        if not external_workflow:
+            try:
+                case.check_lockedfile(
+                    os.path.basename(env_batch.filename), caseroot=caseroot
+                )
+            except:
+                env_batch_has_changed = True
 
-        if env_batch.get_batch_system_type() != "none" and env_batch_has_changed:
+        if batch_system != "none" and env_batch_has_changed and not external_workflow:
             # May need to regen batch files if user made batch setting changes (e.g. walltime, queue, etc)
             logger.warning(
                 """
@@ -160,22 +124,62 @@ manual edits to these file will be lost!
 """
             )
             env_batch.make_all_batch_files(case)
-
-        unlock_file(os.path.basename(env_batch.filename), caseroot=caseroot)
+        case.flush()
         lock_file(os.path.basename(env_batch.filename), caseroot=caseroot)
 
-        case.check_case(skip_pnl=skip_pnl, chksum=chksum)
-        if job == case.get_primary_job():
-            case.check_DA_settings()
-            if case.get_value("MACH") == "mira":
-                with open(".original_host", "w") as fd:
-                    fd.write(socket.gethostname())
+        if resubmit:
+            # This is a resubmission, do not reinitialize test values
+            if job == "case.test":
+                case.set_value("IS_FIRST_RUN", False)
 
-    # Load Modules
-    case.load_env()
+            resub = case.get_value("RESUBMIT")
+            logger.info("Submitting job '{}', resubmit={:d}".format(job, resub))
+            case.set_value("RESUBMIT", resub - 1)
+            if case.get_value("RESUBMIT_SETS_CONTINUE_RUN"):
+                case.set_value("CONTINUE_RUN", True)
 
-    case.flush()
+        else:
+            if job == "case.test":
+                case.set_value("IS_FIRST_RUN", True)
 
+            if no_batch:
+                batch_system = "none"
+            else:
+                batch_system = env_batch.get_batch_system_type()
+
+            case.set_value("BATCH_SYSTEM", batch_system)
+
+            env_batch_has_changed = False
+            try:
+                case.check_lockedfile(os.path.basename(env_batch.filename))
+            except CIMEError:
+                env_batch_has_changed = True
+
+            if env_batch.get_batch_system_type() != "none" and env_batch_has_changed:
+                # May need to regen batch files if user made batch setting changes (e.g. walltime, queue, etc)
+                logger.warning(
+                    """
+env_batch.xml appears to have changed, regenerating batch scripts
+manual edits to these file will be lost!
+"""
+                )
+                env_batch.make_all_batch_files(case)
+
+            unlock_file(os.path.basename(env_batch.filename), caseroot=caseroot)
+            lock_file(os.path.basename(env_batch.filename), caseroot=caseroot)
+
+            case.check_case(skip_pnl=skip_pnl, chksum=chksum)
+            if job == case.get_primary_job():
+                case.check_DA_settings()
+                if case.get_value("MACH") == "mira":
+                    with open(".original_host", "w") as fd:
+                        fd.write(socket.gethostname())
+
+        # Load Modules
+        case.load_env()
+
+        case.flush()
+    
     # Stop here if not submitting job
     if no_submit:
         logger.warning("Not submitting job(s) due to --no-submit flag")
@@ -223,6 +227,7 @@ def submit(
     workflow=True,
     chksum=False,
     no_submit=False,
+    only_submit=False,
 ):
     if resubmit_immediate and self.get_value("MACH") in ["mira", "cetus"]:
         logger.warning(
@@ -276,6 +281,7 @@ def submit(
             workflow=workflow,
             chksum=chksum,
             no_submit=no_submit,
+            only_submit=only_submit,
         )
         run_and_log_case_status(
             functor,

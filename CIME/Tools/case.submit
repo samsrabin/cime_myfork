@@ -50,6 +50,12 @@ def parse_command_line(args, description):
         action="store_true",
         help="Do not submit jobs, but do everything else.",
     )
+    
+    parser.add_argument(
+        "--only-submit",
+        action="store_true",
+        help="Only submit jobs; change nothing about the run directory.",
+    )
 
     parser.add_argument(
         "--only-job",
@@ -141,6 +147,7 @@ def parse_command_line(args, description):
         workflow,
         args.chksum,
         args.no_submit,
+        args.only_submit,
     )
 
 
@@ -162,6 +169,7 @@ def _main_func(description, test_args=False):
         workflow,
         chksum,
         no_submit,
+        only_submit,
     ) = parse_command_line(sys.argv, description)
 
     # save these options to a hidden file for use during resubmit
@@ -198,6 +206,7 @@ def _main_func(description, test_args=False):
                 workflow=workflow,
                 chksum=chksum,
                 no_submit=no_submit,
+                only_submit=only_submit,
             )
 
 
