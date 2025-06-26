@@ -1915,6 +1915,8 @@ directory, NOT in this subdirectory."""
         """
         all_user_mods = []
         for comp in self._component_classes:
+            if comp is None:
+                continue
             component = str(self.get_value("COMP_{}".format(comp)))
             if component == self._primary_component:
                 continue
@@ -1948,6 +1950,8 @@ directory, NOT in this subdirectory."""
 
         Returns None if no value was found, or if the value is an empty string.
         """
+        if component is None:
+            return None
         comp_user_mods = self.get_value("{}_USER_MODS".format(component.upper()))
         # pylint: disable=no-member
         if comp_user_mods is None or comp_user_mods == "" or comp_user_mods.isspace():
