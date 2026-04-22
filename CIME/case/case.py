@@ -196,13 +196,15 @@ class Case(object):
                     machobj = Machines(machine=mach)
 
                 # This check should only be done on systems with a common filesystem but separate login nodes (ncar)
-                if "NCAR_HOST" in os.environ:
-                    probed_machine = machobj.probe_machine_name()
-                    if probed_machine:
-                        expect(
-                            mach == probed_machine,
-                            f"Current machine {probed_machine} does not match case machine {mach}.",
-                        )
+                # SSR 2026-04-22: Commenting out to avoid bug where --non-local doesn't get passed;
+                # see https://github.com/ESMCI/cime/issues/4970
+                # if "NCAR_HOST" in os.environ:
+                #     probed_machine = machobj.probe_machine_name()
+                #     if probed_machine:
+                #         expect(
+                #             mach == probed_machine,
+                #             f"Current machine {probed_machine} does not match case machine {mach}.",
+                #         )
                 if os.path.exists(os.path.join(self.get_value("CASEROOT"), ".git")):
                     self._gitinterface = GitInterface(
                         self.get_value("CASEROOT"), logger
