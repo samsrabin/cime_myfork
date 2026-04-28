@@ -245,6 +245,7 @@
       </xs:sequence>
       <xs:attribute ref="compiler"/>
       <xs:attribute ref="queue"/>
+      <xs:attribute ref="DEBUG"/>
       <xs:attribute ref="mpilib"/>
       <xs:attribute ref="threaded"/>
       <xs:attribute ref="unit_testing"/>

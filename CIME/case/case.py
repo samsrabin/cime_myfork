@@ -2088,6 +2088,7 @@ directory, NOT in this subdirectory."""
         # Things that will have to be matched against mpirun element attributes
         mpi_attribs = {
             "compiler": self.get_value("COMPILER"),
+            "DEBUG": self.get_value("DEBUG"),
             "mpilib": self.get_value("MPILIB"),
             "threaded": self.get_build_threaded(),
             "queue": queue,

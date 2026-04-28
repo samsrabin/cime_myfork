@@ -221,6 +221,7 @@
         <xs:element ref="run_misc_suffix" minOccurs="0"/>
       </xs:sequence>
       <xs:attribute ref="compiler"/>
+      <xs:attribute ref="DEBUG"/>
       <xs:attribute ref="queue"/>
       <xs:attribute ref="mpilib"/>
       <xs:attribute ref="threaded"/>

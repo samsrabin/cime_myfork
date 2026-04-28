@@ -61,6 +61,7 @@ class EnvMachSpecific(EnvBase):
             "threaded",
             "unit_testing",
             "queue",
+            "DEBUG",
             "comp_interface",
         )
         self._comp_interface = comp_interface
